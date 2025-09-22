@@ -18,10 +18,10 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔍%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔍%3C/text%3E%3C/svg%3E">
     
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/papaparse@5/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.3/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <style>
         * {
@@ -476,6 +476,249 @@
                             { header: true, skipEmptyLines: true, delimiter: ';', dynamicTyping: false },
                             { header: true, skipEmptyLines: true, delimiter: '\t', dynamicTyping: false }
                         ];
+                setParts(sampleData);
+            }, []);
+
+            // 검색 필터링
+            const filteredParts = useMemo(() => {
+                if (!searchTerm || !parts.length) return parts;
+                
+                const term = searchTerm.toLowerCase().trim();
+                console.log('검색어:', term, '데이터 개수:', parts.length);
+                
+                const results = parts.filter(part => {
+                    const matches = 
+                        (part['P/N'] && part['P/N'].toLowerCase().includes(term)) ||
+                        (part['DESCRIPTION'] && part['DESCRIPTION'].toLowerCase().includes(term)) ||
+                        (part['MFG'] && part['MFG'].toLowerCase().includes(term)) ||
+                        (part['MFG P/N'] && part['MFG P/N'].toLowerCase().includes(term)) ||
+                        (part['Vender'] && part['Vender'].toLowerCase().includes(term)) ||
+                        (part['Classification'] && part['Classification'].toLowerCase().includes(term)) ||
+                        (part['Location'] && part['Location'].toLowerCase().includes(term)) ||
+                        (part['Note'] && part['Note'].toLowerCase().includes(term));
+                    
+                    return matches;
+                });
+                
+                console.log('검색 결과:', results.length, '개');
+                return results;
+            }, [parts, searchTerm]);
+
+            const handleGoogleSearch = (query = searchTerm) => {
+                if (query) {
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+                }
+            };
+
+            const handleImageSearch = (query = searchTerm) => {
+                if (query) {
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch`, '_blank');
+                }
+            };
+
+            const handlePartSearch = (part) => {
+                const searchQuery = `${part['MFG']} ${part['MFG P/N'] || part['DESCRIPTION']}`;
+                return searchQuery.trim();
+            };
+
+            if (loading) {
+                return (
+                    <div className="container">
+                        <div className="loading">
+                            <div className="spinner"></div>
+                            <h3>데이터를 불러오는 중...</h3>
+                            <p>잠시만 기다려주세요</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <div className="github-badge">GitHub Pages</div>
+                        <h1 className="title">AXCELIS 파트검색</h1>
+                        <p className="subtitle">완전 독립형 부품 검색 시스템</p>
+                        
+                        {/* 파일 업로드 섹션 */}
+                        <div className="upload-section">
+                            <label className="upload-btn" style={{cursor: 'pointer', display: 'inline-block'}}>
+                                📁 CSV 파일 업로드
+                                <input 
+                                    type="file" 
+                                    accept=".csv" 
+                                    onChange={handleFileUpload}
+                                    style={{display: 'none'}}
+                                />
+                            </label>
+                            
+                            <div className={`status-info ${
+                                dataSource === 'sample' ? 'status-sample' : 
+                                dataSource === 'uploaded' ? 'status-uploaded' : 'status-restored'
+                            }`}>
+                                {dataSource === 'sample' && `📋 샘플 데이터 사용 중 (${parts.length}개) - "510002038" 검색해보세요`}
+                                {dataSource === 'uploaded' && `✅ 업로드된 CSV 파일 사용 중 (${parts.length}개 부품)`}
+                                {dataSource === 'restored' && `🔄 저장된 데이터 복원됨 (${parts.length}개 부품)`}
+                            </div>
+                        </div>
+                        
+                        <div className="search-box">
+                            <input
+                                type="text"
+                                className="search-input"
+                                placeholder="P/N, DESCRIPTION, MFG, Classification, Location 등으로 검색..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="search-buttons">
+                            <button 
+                                className="btn btn-google"
+                                onClick={() => handleGoogleSearch()}
+                                disabled={!searchTerm}
+                            >
+                                🔍 구글검색
+                            </button>
+                            <button 
+                                className="btn btn-image"
+                                onClick={() => handleImageSearch()}
+                                disabled={!searchTerm}
+                            >
+                                📷 이미지검색
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="stats">
+                        📊 총 {parts.length}개 중 {filteredParts.length}개 검색됨
+                    </div>
+
+                    <div className="results">
+                        {filteredParts.length === 0 ? (
+                            <div className="no-results">
+                                <h3>🔍 검색 결과가 없습니다</h3>
+                                <p>다른 키워드로 검색해보시거나 CSV 파일을 업로드해주세요</p>
+                                {searchTerm && (
+                                    <button 
+                                        className="btn btn-google" 
+                                        onClick={() => handleGoogleSearch()}
+                                    >
+                                        구글에서 "{searchTerm}" 검색하기
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            filteredParts.map((part, index) => (
+                                <div key={index} className="part-item">
+                                    <div className="part-number">📦 {part['P/N']}</div>
+                                    <div className="part-name">{part['DESCRIPTION']}</div>
+                                    
+                                    <div className="part-details">
+                                        {part['MFG'] && (
+                                            <div className="detail-item">
+                                                <div className="detail-label">MFG</div>
+                                                <div className="detail-value">{part['MFG']}</div>
+                                            </div>
+                                        )}
+                                        {part['MFG P/N'] && (
+                                            <div className="detail-item">
+                                                <div className="detail-label">MFG P/N</div>
+                                                <div className="detail-value">{part['MFG P/N']}</div>
+                                            </div>
+                                        )}
+                                        {part['REV'] && (
+                                            <div className="detail-item">
+                                                <div className="detail-label">REV</div>
+                                                <div className="detail-value">🔄 {part['REV']}</div>
+                                            </div>
+                                        )}
+                                        {part['Vender'] && (
+                                            <div className="detail-item">
+                                                <div className="detail-label">Vender</div>
+                                                <div className="detail-value">{part['Vender']}</div>
+                                            </div>
+                                        )}
+                                        {part['Classification'] && (
+                                            <div className="detail-item detail-category">
+                                                <div className="detail-label">Classification</div>
+                                                <div className="detail-value">🏷️ {part['Classification']}</div>
+                                            </div>
+                                        )}
+                                        {part['Location'] && (
+                                            <div className="detail-item detail-location">
+                                                <div className="detail-label">Location</div>
+                                                <div className="detail-value">📍 {part['Location']}</div>
+                                            </div>
+                                        )}
+                                        {part['24 Price'] && (
+                                            <div className="detail-item detail-price">
+                                                <div className="detail-label">24 Price</div>
+                                                <div className="detail-value">💰 ₩{part['24 Price']}</div>
+                                            </div>
+                                        )}
+                                        {part['25 Price'] && (
+                                            <div className="detail-item detail-price">
+                                                <div className="detail-label">25 Price</div>
+                                                <div className="detail-value">💰 ₩{part['25 Price']}</div>
+                                            </div>
+                                        )}
+                                        {part['Note'] && (
+                                            <div className="detail-item">
+                                                <div className="detail-label">Note</div>
+                                                <div className="detail-value">📝 {part['Note']}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="part-actions">
+                                        <button
+                                            className="btn btn-google btn-small"
+                                            onClick={() => handleGoogleSearch(handlePartSearch(part))}
+                                        >
+                                            🔍 구글검색
+                                        </button>
+                                        <button
+                                            className="btn btn-image btn-small"
+                                            onClick={() => handleImageSearch(handlePartSearch(part))}
+                                        >
+                                            📷 이미지검색
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    
+                    {/* PWA 설치 프롬프트 */}
+                    {showInstallPrompt && (
+                        <div className="install-prompt" onClick={handleInstallClick}>
+                            📱 홈화면에 추가하기
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<PartSearchApp />, document.getElementById('root'));
+    </script>
+
+    <!-- PWA 서비스워커 등록 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then((registration) => {
+                    console.log('SW registered: ', registration);
+                })
+                .catch((registrationError) => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
                         
                         let parsedData = null;
                         let usedDelimiter = '';
@@ -701,3 +944,6 @@
                         'Location': 'Warehouse-B2',
                         '24 Price': '10000',
                         '25 Price': '12000',
+                        'REV': 'A',
+                        'Note': 'Sample data for testing'
+                    }
