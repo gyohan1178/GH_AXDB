@@ -1,50 +1,586 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>AXCELIS 파트검색</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AXCELIS 파트검색</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="AXCELIS 파트검색">
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/papaparse@5/papaparse.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .upload-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px dashed #cbd5e1;
+        }
+        
+        .upload-btn {
+            background: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        
+        .status-info {
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .status-sample {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-uploaded {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .search-section {
+            margin: 20px 0;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            outline: none;
+        }
+        
+        .search-input:focus {
+            border-color: #2563eb;
+        }
+        
+        .search-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-google {
+            background: #4285f4;
+            color: white;
+        }
+        
+        .btn-google:hover {
+            background: #3367d6;
+        }
+        
+        .btn-image {
+            background: #ea4335;
+            color: white;
+        }
+        
+        .btn-image:hover {
+            background: #d33b2c;
+        }
+        
+        .stats {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        
+        .results {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .part-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            border-left: 4px solid #2563eb;
+            transition: transform 0.2s;
+        }
+        
+        .part-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .part-number {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+        
+        .part-name {
+            font-size: 1.1rem;
+            color: #374151;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .part-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .detail-item {
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        .detail-label {
+            color: #6b7280;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .detail-value {
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .detail-price {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .detail-category {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+        
+        .detail-location {
+            background: #ecfdf5;
+            color: #059669;
+        }
+        
+        .part-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header { padding: 20px; }
+            .title { font-size: 2rem; }
+            .part-details { grid-template-columns: 1fr; }
+            .search-buttons { flex-direction: column; }
+        }
+    </style>
 </head>
 <body>
     <div id="root"></div>
+    
     <script>
         const { useState, useMemo, useEffect } = React;
         
         function PartSearchApp() {
-            const [parts, setParts] = useState([
-                {'P/N': '510002038', 'DESCRIPTION': 'Test Part', 'MFG': 'Test', 'Location': 'Test-Location'}
-            ]);
             const [searchTerm, setSearchTerm] = useState('');
+            const [parts, setParts] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [dataSource, setDataSource] = useState('sample');
             
+            // CSV 파일 업로드
+            const handleFileUpload = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (!file.name.toLowerCase().endsWith('.csv')) {
+                    alert('CSV 파일만 업로드 가능합니다.');
+                    return;
+                }
+                
+                setLoading(true);
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    try {
+                        const csvContent = e.target.result;
+                        const parsedData = Papa.parse(csvContent, {
+                            header: true,
+                            skipEmptyLines: true,
+                            dynamicTyping: false
+                        });
+                        
+                        console.log('파싱된 컬럼:', parsedData.meta.fields);
+                        
+                        const cleanedData = parsedData.data
+                            .filter(row => row['P/N'] && row['P/N'].toString().trim())
+                            .map(row => ({
+                                'P/N': String(row['P/N'] || '').trim(),
+                                'DESCRIPTION': String(row['DESCRIPTION'] || '').trim(),
+                                'REV': String(row['REV'] || '').trim(),
+                                'MFG': String(row['MFG'] || '').trim(),
+                                'MFG P/N': String(row['MFG P/N'] || '').trim(),
+                                'Vender': String(row['Vender'] || '').trim(),
+                                'Note': String(row['Note'] || '').trim(),
+                                'Classification': String(row['Classification'] || '').trim(),
+                                'Location': String(row['Location'] || '').trim(),
+                                '24 Price': String(row['24 Price'] || row[' 24 Price '] || '').trim(),
+                                '25 Price': String(row['25 Price'] || row[' 25 Price '] || '').trim()
+                            }));
+                        
+                        console.log('정리된 데이터:', cleanedData.length, '개');
+                        setParts(cleanedData);
+                        setDataSource('uploaded');
+                        
+                        // 로컬 저장
+                        try {
+                            localStorage.setItem('axcelis-parts-data', JSON.stringify(cleanedData));
+                            localStorage.setItem('axcelis-data-timestamp', Date.now().toString());
+                        } catch (e) {
+                            console.log('로컬 저장 실패:', e);
+                        }
+                        
+                        alert(`${cleanedData.length}개의 부품 데이터를 성공적으로 로드했습니다!`);
+                        
+                    } catch (error) {
+                        console.error('파일 파싱 오류:', error);
+                        alert('파일을 읽는 중 오류가 발생했습니다.');
+                    }
+                    setLoading(false);
+                };
+                
+                reader.readAsText(file, 'utf-8');
+            };
+            
+            // 초기 데이터 로드
+            useEffect(() => {
+                // 로컬 스토리지에서 복원
+                try {
+                    const savedData = localStorage.getItem('axcelis-parts-data');
+                    const savedTimestamp = localStorage.getItem('axcelis-data-timestamp');
+                    
+                    if (savedData && savedTimestamp) {
+                        const data = JSON.parse(savedData);
+                        const timestamp = parseInt(savedTimestamp);
+                        const hoursSinceUpload = (Date.now() - timestamp) / (1000 * 60 * 60);
+                        
+                        if (data.length > 0 && hoursSinceUpload < 24) {
+                            setParts(data);
+                            setDataSource('restored');
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.log('로컬 데이터 복원 실패:', e);
+                }
+                
+                // 샘플 데이터
+                const sampleData = [
+                    {
+                        'P/N': '100841',
+                        'DESCRIPTION': 'WIRE-HOOKUP, 16GA, VINYL, BLK',
+                        'MFG': 'ALPHAWIRE',
+                        'MFG P/N': '3077',
+                        'Vender': 'Mouser',
+                        'Classification': 'General Parts',
+                        'Location': 'Warehouse-A1',
+                        '24 Price': '3333',
+                        '25 Price': '3333',
+                        'REV': '',
+                        'Note': ''
+                    },
+                    {
+                        'P/N': '510002038',
+                        'DESCRIPTION': 'Test Component - Sample Data',
+                        'MFG': 'Test Manufacturer',
+                        'MFG P/N': 'TEST-001',
+                        'Vender': 'Test Supplier',
+                        'Classification': 'Special Parts',
+                        'Location': 'Warehouse-B2',
+                        '24 Price': '10000',
+                        '25 Price': '12000',
+                        'REV': 'A',
+                        'Note': 'Sample data for testing'
+                    }
+                ];
+                setParts(sampleData);
+            }, []);
+            
+            // 검색 필터링
             const filteredParts = useMemo(() => {
-                if (!searchTerm) return parts;
-                return parts.filter(part => 
-                    part['P/N'].toLowerCase().includes(searchTerm.toLowerCase())
-                );
+                if (!searchTerm || !parts.length) return parts;
+                
+                const term = searchTerm.toLowerCase().trim();
+                return parts.filter(part => {
+                    return (
+                        (part['P/N'] && part['P/N'].toLowerCase().includes(term)) ||
+                        (part['DESCRIPTION'] && part['DESCRIPTION'].toLowerCase().includes(term)) ||
+                        (part['MFG'] && part['MFG'].toLowerCase().includes(term)) ||
+                        (part['MFG P/N'] && part['MFG P/N'].toLowerCase().includes(term)) ||
+                        (part['Vender'] && part['Vender'].toLowerCase().includes(term)) ||
+                        (part['Classification'] && part['Classification'].toLowerCase().includes(term)) ||
+                        (part['Location'] && part['Location'].toLowerCase().includes(term)) ||
+                        (part['Note'] && part['Note'].toLowerCase().includes(term))
+                    );
+                });
             }, [parts, searchTerm]);
             
-            return React.createElement('div', {style: {padding: '20px'}},
-                React.createElement('h1', null, 'AXCELIS 파트검색'),
-                React.createElement('input', {
-                    type: 'text',
-                    placeholder: 'P/N 검색...',
-                    value: searchTerm,
-                    onChange: (e) => setSearchTerm(e.target.value),
-                    style: {width: '100%', padding: '10px', margin: '20px 0'}
-                }),
-                React.createElement('div', null, `총 ${filteredParts.length}개`),
-                filteredParts.map((part, i) => 
-                    React.createElement('div', {key: i, style: {border: '1px solid #ccc', padding: '10px', margin: '10px 0'}},
-                        React.createElement('h3', null, part['P/N']),
-                        React.createElement('p', null, part['DESCRIPTION']),
-                        React.createElement('p', null, `MFG: ${part['MFG']}`),
-                        React.createElement('p', null, `Location: ${part['Location']}`)
+            const handleGoogleSearch = (query) => {
+                if (query) {
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+                }
+            };
+            
+            const handleImageSearch = (query) => {
+                if (query) {
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch`, '_blank');
+                }
+            };
+            
+            if (loading) {
+                return React.createElement('div', {className: 'container'},
+                    React.createElement('div', {className: 'loading'},
+                        React.createElement('div', {className: 'spinner'}),
+                        React.createElement('h3', null, '데이터를 불러오는 중...'),
+                        React.createElement('p', null, '잠시만 기다려주세요')
                     )
+                );
+            }
+            
+            return React.createElement('div', {className: 'container'}, [
+                // 헤더
+                React.createElement('div', {key: 'header', className: 'header'}, [
+                    React.createElement('h1', {key: 'title', className: 'title'}, 'AXCELIS 파트검색'),
+                    React.createElement('p', {key: 'subtitle', className: 'subtitle'}, '부품 정보를 빠르고 정확하게 검색하세요'),
+                    
+                    // 파일 업로드
+                    React.createElement('div', {key: 'upload', className: 'upload-section'}, [
+                        React.createElement('label', {key: 'upload-btn', className: 'upload-btn', style: {cursor: 'pointer', display: 'inline-block'}}, [
+                            '📁 CSV 파일 업로드',
+                            React.createElement('input', {
+                                key: 'file-input',
+                                type: 'file',
+                                accept: '.csv',
+                                onChange: handleFileUpload,
+                                style: {display: 'none'}
+                            })
+                        ]),
+                        React.createElement('div', {
+                            key: 'status',
+                            className: `status-info ${dataSource === 'sample' ? 'status-sample' : 'status-uploaded'}`
+                        }, 
+                            dataSource === 'sample' ? `📋 샘플 데이터 사용 중 (${parts.length}개) - "510002038" 검색해보세요` :
+                            dataSource === 'uploaded' ? `✅ 업로드된 CSV 파일 사용 중 (${parts.length}개 부품)` :
+                            `🔄 저장된 데이터 복원됨 (${parts.length}개 부품)`
+                        )
+                    ]),
+                    
+                    // 검색
+                    React.createElement('div', {key: 'search', className: 'search-section'}, [
+                        React.createElement('input', {
+                            key: 'search-input',
+                            type: 'text',
+                            className: 'search-input',
+                            placeholder: 'P/N, DESCRIPTION, MFG, Classification, Location 등으로 검색...',
+                            value: searchTerm,
+                            onChange: (e) => setSearchTerm(e.target.value)
+                        }),
+                        React.createElement('div', {key: 'search-buttons', className: 'search-buttons'}, [
+                            React.createElement('button', {
+                                key: 'google-btn',
+                                className: 'btn btn-google',
+                                onClick: () => handleGoogleSearch(searchTerm),
+                                disabled: !searchTerm
+                            }, '🔍 구글검색'),
+                            React.createElement('button', {
+                                key: 'image-btn',
+                                className: 'btn btn-image',
+                                onClick: () => handleImageSearch(searchTerm),
+                                disabled: !searchTerm
+                            }, '📷 이미지검색')
+                        ])
+                    ])
+                ]),
+                
+                // 통계
+                React.createElement('div', {key: 'stats', className: 'stats'}, 
+                    `📊 총 ${parts.length}개 중 ${filteredParts.length}개 검색됨`
+                ),
+                
+                // 결과
+                React.createElement('div', {key: 'results', className: 'results'}, 
+                    filteredParts.length === 0 ? 
+                        React.createElement('div', {className: 'no-results'}, [
+                            React.createElement('h3', {key: 'no-title'}, '🔍 검색 결과가 없습니다'),
+                            React.createElement('p', {key: 'no-desc'}, '다른 키워드로 검색해보시거나 CSV 파일을 업로드해주세요'),
+                            searchTerm ? React.createElement('button', {
+                                key: 'no-google',
+                                className: 'btn btn-google',
+                                style: {marginTop: '20px'},
+                                onClick: () => handleGoogleSearch(searchTerm)
+                            }, `구글에서 "${searchTerm}" 검색하기`) : null
+                        ]) :
+                        filteredParts.map((part, index) => 
+                            React.createElement('div', {key: index, className: 'part-item'}, [
+                                React.createElement('div', {key: 'number', className: 'part-number'}, `📦 ${part['P/N']}`),
+                                React.createElement('div', {key: 'name', className: 'part-name'}, part['DESCRIPTION']),
+                                
+                                React.createElement('div', {key: 'details', className: 'part-details'}, [
+                                    part['MFG'] ? React.createElement('div', {key: 'mfg', className: 'detail-item'}, [
+                                        React.createElement('div', {key: 'mfg-label', className: 'detail-label'}, 'MFG'),
+                                        React.createElement('div', {key: 'mfg-value', className: 'detail-value'}, part['MFG'])
+                                    ]) : null,
+                                    part['MFG P/N'] ? React.createElement('div', {key: 'mfg-pn', className: 'detail-item'}, [
+                                        React.createElement('div', {key: 'mfg-pn-label', className: 'detail-label'}, 'MFG P/N'),
+                                        React.createElement('div', {key: 'mfg-pn-value', className: 'detail-value'}, part['MFG P/N'])
+                                    ]) : null,
+                                    part['REV'] ? React.createElement('div', {key: 'rev', className: 'detail-item'}, [
+                                        React.createElement('div', {key: 'rev-label', className: 'detail-label'}, 'REV'),
+                                        React.createElement('div', {key: 'rev-value', className: 'detail-value'}, `🔄 ${part['REV']}`)
+                                    ]) : null,
+                                    part['Vender'] ? React.createElement('div', {key: 'vender', className: 'detail-item'}, [
+                                        React.createElement('div', {key: 'vender-label', className: 'detail-label'}, 'Vender'),
+                                        React.createElement('div', {key: 'vender-value', className: 'detail-value'}, part['Vender'])
+                                    ]) : null,
+                                    part['Classification'] ? React.createElement('div', {key: 'class', className: 'detail-item detail-category'}, [
+                                        React.createElement('div', {key: 'class-label', className: 'detail-label'}, 'Classification'),
+                                        React.createElement('div', {key: 'class-value', className: 'detail-value'}, `🏷️ ${part['Classification']}`)
+                                    ]) : null,
+                                    part['Location'] ? React.createElement('div', {key: 'location', className: 'detail-item detail-location'}, [
+                                        React.createElement('div', {key: 'location-label', className: 'detail-label'}, 'Location'),
+                                        React.createElement('div', {key: 'location-value', className: 'detail-value'}, `📍 ${part['Location']}`)
+                                    ]) : null,
+                                    part['24 Price'] ? React.createElement('div', {key: 'price24', className: 'detail-item detail-price'}, [
+                                        React.createElement('div', {key: 'price24-label', className: 'detail-label'}, '24 Price'),
+                                        React.createElement('div', {key: 'price24-value', className: 'detail-value'}, `💰 ₩${part['24 Price']}`)
+                                    ]) : null,
+                                    part['25 Price'] ? React.createElement('div', {key: 'price25', className: 'detail-item detail-price'}, [
+                                        React.createElement('div', {key: 'price25-label', className: 'detail-label'}, '25 Price'),
+                                        React.createElement('div', {key: 'price25-value', className: 'detail-value'}, `💰 ₩${part['25 Price']}`)
+                                    ]) : null,
+                                    part['Note'] ? React.createElement('div', {key: 'note', className: 'detail-item'}, [
+                                        React.createElement('div', {key: 'note-label', className: 'detail-label'}, 'Note'),
+                                        React.createElement('div', {key: 'note-value', className: 'detail-value'}, `📝 ${part['Note']}`)
+                                    ]) : null
+                                ].filter(Boolean)),
+                                
+                                React.createElement('div', {key: 'actions', className: 'part-actions'}, [
+                                    React.createElement('button', {
+                                        key: 'google-part',
+                                        className: 'btn btn-google btn-small',
+                                        onClick: () => handleGoogleSearch(`${part['MFG']} ${part['MFG P/N'] || part['DESCRIPTION']}`)
+                                    }, '🔍 구글검색'),
+                                    React.createElement('button', {
+                                        key: 'image-part',
+                                        className: 'btn btn-image btn-small',
+                                        onClick: () => handleImageSearch(`${part['MFG']} ${part['MFG P/N'] || part['DESCRIPTION']}`)
+                                    }, '📷 이미지검색')
+                                ])
+                            ])
+                        )
                 )
-            );
+            ]);
         }
         
         ReactDOM.render(React.createElement(PartSearchApp), document.getElementById('root'));
