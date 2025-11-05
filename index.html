@@ -321,7 +321,7 @@
                                 'REV': String(row['REV'] || '').trim(),
                                 'MFG': String(row['MFG'] || '').trim(),
                                 'MFG P/N': String(row['MFG P/N'] || '').trim(),
-                                'Vender': String(row['Vender'] || '').trim(),
+                                'Client': String(row['Client'] || '').trim(),
                                 'Note': String(row['Note'] || '').trim(),
                                 'Classification': String(row['Classification'] || '').trim(),
                                 'Location': String(row['Location'] || '').trim(),
@@ -382,7 +382,7 @@
                         'DESCRIPTION': 'WIRE-HOOKUP, 16GA, VINYL, BLK',
                         'MFG': 'ALPHAWIRE',
                         'MFG P/N': '3077',
-                        'Vender': 'Mouser',
+                        'Client': 'EDWARDS',
                         'Classification': 'General Parts',
                         'Location': 'Warehouse-A1',
                         '24 Price': '3333',
@@ -395,7 +395,7 @@
                         'DESCRIPTION': 'Test Component - Sample Data',
                         'MFG': 'Test Manufacturer',
                         'MFG P/N': 'TEST-001',
-                        'Vender': 'Test Supplier',
+                        'Client': 'Test Supplier',
                         'Classification': 'Special Parts',
                         'Location': 'Warehouse-B2',
                         '24 Price': '10000',
@@ -418,7 +418,7 @@
                         (part['DESCRIPTION'] && part['DESCRIPTION'].toLowerCase().includes(term)) ||
                         (part['MFG'] && part['MFG'].toLowerCase().includes(term)) ||
                         (part['MFG P/N'] && part['MFG P/N'].toLowerCase().includes(term)) ||
-                        (part['Vender'] && part['Vender'].toLowerCase().includes(term)) ||
+                        (part['Client'] && part['Client'].toLowerCase().includes(term)) ||
                         (part['Classification'] && part['Classification'].toLowerCase().includes(term)) ||
                         (part['Location'] && part['Location'].toLowerCase().includes(term)) ||
                         (part['Note'] && part['Note'].toLowerCase().includes(term))
@@ -539,9 +539,9 @@
                                         React.createElement('div', {key: 'rev-label', className: 'detail-label'}, 'REV'),
                                         React.createElement('div', {key: 'rev-value', className: 'detail-value'}, `🔄 ${part['REV']}`)
                                     ]) : null,
-                                    part['Vender'] ? React.createElement('div', {key: 'vender', className: 'detail-item'}, [
-                                        React.createElement('div', {key: 'vender-label', className: 'detail-label'}, 'Vender'),
-                                        React.createElement('div', {key: 'vender-value', className: 'detail-value'}, part['Vender'])
+                                    part['Client'] ? React.createElement('div', {key: 'Client', className: 'detail-item'}, [
+                                        React.createElement('div', {key: 'Client-label', className: 'detail-label'}, 'Client'),
+                                        React.createElement('div', {key: 'Client-value', className: 'detail-value'}, part['Client'])
                                     ]) : null,
                                     part['Classification'] ? React.createElement('div', {key: 'class', className: 'detail-item detail-category'}, [
                                         React.createElement('div', {key: 'class-label', className: 'detail-label'}, 'Classification'),
