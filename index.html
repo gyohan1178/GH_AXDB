@@ -6,7 +6,7 @@
     <title> 진선 파트검색</title>
     <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="AXCELIS 파트검색">
+    <meta name="apple-mobile-web-app-title" content="진선 파트검색">
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -335,8 +335,8 @@
                         
                         // 로컬 저장
                         try {
-                            localStorage.setItem('axcelis-parts-data', JSON.stringify(cleanedData));
-                            localStorage.setItem('axcelis-data-timestamp', Date.now().toString());
+                            localStorage.setItem('진선-parts-data', JSON.stringify(cleanedData));
+                            localStorage.setItem('진선-data-timestamp', Date.now().toString());
                         } catch (e) {
                             console.log('로컬 저장 실패:', e);
                         }
@@ -357,8 +357,8 @@
             useEffect(() => {
                 // 로컬 스토리지에서 복원
                 try {
-                    const savedData = localStorage.getItem('axcelis-parts-data');
-                    const savedTimestamp = localStorage.getItem('axcelis-data-timestamp');
+                    const savedData = localStorage.getItem('진선-parts-data');
+                    const savedTimestamp = localStorage.getItem('진선-data-timestamp');
                     
                     if (savedData && savedTimestamp) {
                         const data = JSON.parse(savedData);
@@ -451,7 +451,7 @@
             return React.createElement('div', {className: 'container'}, [
                 // 헤더
                 React.createElement('div', {key: 'header', className: 'header'}, [
-                    React.createElement('h1', {key: 'title', className: 'title'}, 'AXCELIS 파트검색'),
+                    React.createElement('h1', {key: 'title', className: 'title'}, '진선 파트검색'),
                     React.createElement('p', {key: 'subtitle', className: 'subtitle'}, '부품 정보를 빠르고 정확하게 검색하세요'),
                     
                     // 파일 업로드
